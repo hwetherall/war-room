@@ -53,11 +53,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.log(`⚖️  Judge delivered verdict: ${data.verdict.winner}`);
       } else if (nodeName === 'moderator') {
         // Moderator returns a structured truth-seeking analysis
-        payload = {
-          type: 'moderator',
-          content: data.moderator_analysis
-        };
-        console.log(`📊 Moderator analysis: Bull ${data.moderator_analysis.bull_wins} - Bear ${data.moderator_analysis.bear_wins} (${data.moderator_analysis.ties} ties)`);
+        if (!data.moderator_analysis) {
+          console.error('❌ Moderator node returned no analysis');
+          payload = {
+            type: 'error',
+            content: 'Moderator analysis failed - no data returned'
+          };
+        } else {
+          payload = {
+            type: 'moderator',
+            content: data.moderator_analysis
+          };
+          console.log(`📊 Moderator analysis: Bull ${data.moderator_analysis.bull_wins} - Bear ${data.moderator_analysis.bear_wins} (${data.moderator_analysis.ties} ties)`);
+        }
       } else {
         // Bull and Bear return messages array with LangChain message objects
         const messageContent = data.messages?.[0]?.content || '';
