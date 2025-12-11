@@ -4,9 +4,7 @@ import {
   Swords, 
   TrendingUp, 
   TrendingDown, 
-  Scale, 
   Zap,
-  AlertTriangle,
   Activity,
   Loader2,
   Target,
@@ -15,7 +13,8 @@ import {
   CheckCircle,
   XCircle,
   Minus,
-  FileText
+  FileText,
+  BookOpen
 } from 'lucide-react';
 import clsx from 'clsx';
 import ReactMarkdown from 'react-markdown';
@@ -419,8 +418,8 @@ export default function App() {
             ))}
           </AnimatePresence>
 
-          {/* Typing Indicator */}
-          {currentSpeaker && currentSpeaker !== 'judge' && (
+          {/* Typing Indicator for Bull/Bear */}
+          {currentSpeaker && (currentSpeaker === 'bull' || currentSpeaker === 'bear') && (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -470,117 +469,69 @@ export default function App() {
           )}
         </div>
 
-        {/* Verdict Section */}
+        {/* Debate Complete - Moderator Loading State */}
         <AnimatePresence mode="wait">
-          {(currentSpeaker === 'judge' || verdict) && (
+          {verdict && !moderatorAnalysis && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.5 }}
               className="mt-8"
             >
-              {!verdict && currentSpeaker === 'judge' ? (
-                <div className="glass rounded-xl p-8 text-center">
-                  <Scale className="w-12 h-12 text-amber-400/50 mx-auto mb-4 animate-pulse" />
-                  <p className="text-amber-400/60 text-sm font-mono">The Managing Partner is deliberating...</p>
-                </div>
-              ) : verdict && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, ease: 'easeOut' }}
-                  className="glass rounded-xl overflow-hidden animate-pulse-glow"
-                >
-                  {/* Winner Banner */}
-                  <div className={clsx(
-                    "px-6 py-4 text-center border-b",
-                    verdict.winner === 'Bull' 
-                      ? "bg-emerald-500/20 border-emerald-500/30" 
-                      : verdict.winner === 'Bear'
-                      ? "bg-rose-500/20 border-rose-500/30"
-                      : "bg-slate-500/20 border-slate-500/30"
-                  )}>
-                    <div className="flex items-center justify-center gap-3 mb-1">
-                      <Scale className="w-5 h-5 text-amber-400" />
-                      <p className="text-xs text-slate-400 uppercase tracking-widest">The Verdict</p>
+              <div className="glass rounded-xl p-8 border border-violet-500/30">
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  {/* Debate Complete Badge */}
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-500/30">
+                    <CheckCircle className="w-4 h-4 text-amber-400" />
+                    <span className="text-sm font-semibold text-amber-400">Debate Complete</span>
+                  </div>
+                  
+                  {/* Animated Icon */}
+                  <div className="relative mt-4">
+                    <div className="w-16 h-16 rounded-full bg-violet-500/20 flex items-center justify-center">
+                      <BookOpen className="w-8 h-8 text-violet-400 animate-pulse" />
                     </div>
-                    <p className={clsx(
-                      "text-2xl font-bold tracking-tight",
-                      verdict.winner === 'Bull' ? "text-emerald-400" : 
-                      verdict.winner === 'Bear' ? "text-rose-400" : "text-slate-400"
-                    )}>
-                      {verdict.winner === 'Bull' && '🐂 '}
-                      {verdict.winner === 'Bear' && '🐻 '}
-                      THE {verdict.winner.toUpperCase()} PREVAILS
+                    <div className="absolute inset-0 rounded-full border-2 border-violet-500/30 animate-ping" />
+                  </div>
+                  
+                  {/* Status Text */}
+                  <div className="text-center mt-4">
+                    <p className="text-lg font-medium text-violet-300 mb-1">
+                      The Moderator is reviewing the debate
+                    </p>
+                    <p className="text-sm text-slate-400">
+                      Analyzing arguments and determining point-by-point winners...
                     </p>
                   </div>
-
-                  <div className="p-6 space-y-6">
-                    {/* Confidence Score */}
-                    <div>
-                      <div className="flex items-center justify-between text-xs mb-2">
-                        <span className="text-slate-400 uppercase tracking-wider">Conviction Level</span>
-                        <span className="font-mono text-amber-400">{verdict.confidence_score}/10</span>
-                      </div>
-                      <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
-                        <motion.div 
-                          initial={{ width: 0 }}
-                          animate={{ width: `${verdict.confidence_score * 10}%` }}
-                          transition={{ duration: 1, delay: 0.3, ease: 'easeOut' }}
-                          className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Reasoning */}
-                    <div>
-                      <h3 className="text-xs text-slate-400 uppercase tracking-wider mb-2">Analysis</h3>
-                      <p className="text-sm text-slate-300 leading-relaxed">
-                        {verdict.reasoning}
-                      </p>
-                    </div>
-
-                    {/* Key Takeaway */}
-                    <div className="bg-amber-500/10 rounded-lg p-4 border border-amber-500/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <AlertTriangle className="w-4 h-4 text-amber-400" />
-                        <h3 className="text-xs text-amber-400 uppercase tracking-wider font-semibold">
-                          Key Investment Insight
-                        </h3>
-                      </div>
-                      <p className="text-sm text-amber-200/80 italic leading-relaxed">
-                        "{verdict.key_takeaway}"
-                      </p>
-                    </div>
+                  
+                  {/* Progress Animation */}
+                  <div className="flex gap-1 mt-4">
+                    <span className="w-2 h-2 rounded-full bg-violet-400 animate-typing" style={{ animationDelay: '0s' }} />
+                    <span className="w-2 h-2 rounded-full bg-violet-400 animate-typing" style={{ animationDelay: '0.2s' }} />
+                    <span className="w-2 h-2 rounded-full bg-violet-400 animate-typing" style={{ animationDelay: '0.4s' }} />
                   </div>
-                </motion.div>
-              )}
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Moderator Analysis Section */}
         <AnimatePresence mode="wait">
-          {(currentSpeaker === 'moderator' || moderatorAnalysis) && (
+          {moderatorAnalysis && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="mt-8"
             >
-              {!moderatorAnalysis && currentSpeaker === 'moderator' ? (
-                <div className="glass rounded-xl p-8 text-center border border-violet-500/30">
-                  <ClipboardList className="w-12 h-12 text-violet-400/50 mx-auto mb-4 animate-pulse" />
-                  <p className="text-violet-400/60 text-sm font-mono">The Moderator is analyzing key points...</p>
-                  <p className="text-xs text-slate-500 mt-2">Using Claude Opus 4.5 for truth-seeking analysis</p>
-                </div>
-              ) : moderatorAnalysis && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, ease: 'easeOut' }}
-                  className="glass rounded-xl overflow-hidden border border-violet-500/30"
-                >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className="glass rounded-xl overflow-hidden border border-violet-500/30"
+              >
                   {/* Header with Scoreboard */}
                   <div className="px-6 py-5 bg-gradient-to-r from-violet-900/40 to-indigo-900/40 border-b border-violet-500/20">
                     <div className="flex items-center justify-between">
@@ -726,7 +677,6 @@ export default function App() {
                     </div>
                   </div>
                 </motion.div>
-              )}
             </motion.div>
           )}
         </AnimatePresence>

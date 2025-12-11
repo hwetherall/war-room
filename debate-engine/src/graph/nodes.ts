@@ -172,7 +172,7 @@ For confidence_score, provide a number between 0 and 10 indicating how confident
 export const moderatorNode = async (state: typeof DebateState.State) => {
   // Use Claude Sonnet 4.5 for analysis (Opus 4 times out on Vercel)
   // Can upgrade to "anthropic/claude-opus-4" for deeper analysis if using longer timeouts
-  const model = createModel("anthropic/claude-opus-4.5").withStructuredOutput(
+  const model = createModel("openai/gpt-5.2").withStructuredOutput(
     z.object({
       points: z.array(z.object({
         point_number: z.number(),
