@@ -6,6 +6,27 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
+// Validate required environment variables
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY === 'your_openrouter_api_key_here') {
+  console.error(`
+╔══════════════════════════════════════════════════╗
+║     ❌ MISSING API KEY                            ║
+╠══════════════════════════════════════════════════╣
+║  The OPENROUTER_API_KEY is missing or invalid.   ║
+║                                                   ║
+║  To fix this:                                     ║
+║  1. Get an API key from https://openrouter.ai    ║
+║  2. Add it to debate-engine/.env:                 ║
+║     OPENROUTER_API_KEY=sk-or-v1-...               ║
+║                                                   ║
+║  Make sure the .env file is in the               ║
+║  debate-engine/ directory.                       ║
+╚══════════════════════════════════════════════════╝
+  `);
+  process.exit(1);
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -76,9 +97,18 @@ app.post('/api/debate', async (req, res) => {
     console.log('✅ Debate completed successfully\n');
     res.end();
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Debate Error:', error);
-    res.write(`data: ${JSON.stringify({ type: 'error', content: 'Debate failed. Check server logs.' })}\n\n`);
+    
+    // Provide helpful error messages for common issues
+    let errorMessage = 'Debate failed. Check server logs.';
+    if (error?.code === 401 || error?.error?.code === 401) {
+      errorMessage = 'Authentication failed. Please check your OPENROUTER_API_KEY in debate-engine/.env. The API key may be invalid or expired.';
+    } else if (error?.message?.includes('OPENROUTER_API_KEY')) {
+      errorMessage = error.message;
+    }
+    
+    res.write(`data: ${JSON.stringify({ type: 'error', content: errorMessage })}\n\n`);
     res.end();
   }
 });

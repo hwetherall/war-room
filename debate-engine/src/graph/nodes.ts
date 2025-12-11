@@ -4,11 +4,24 @@ import { fetchChapterContent } from "../utils/supabase";
 import { z } from "zod";
 import { DebateState } from "./state";
 
+// Validate API key before creating models
+const getApiKey = () => {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey || apiKey === 'your_openrouter_api_key_here') {
+    throw new Error(
+      'OPENROUTER_API_KEY is missing or not configured. ' +
+      'Please add your OpenRouter API key to debate-engine/.env file. ' +
+      'Get one at https://openrouter.ai'
+    );
+  }
+  return apiKey;
+};
+
 // Initialize OpenRouter Models
 const createModel = (modelName: string) => {
   return new ChatOpenAI({
     modelName: modelName,
-    apiKey: process.env.OPENROUTER_API_KEY,
+    apiKey: getApiKey(),
     configuration: {
       baseURL: "https://openrouter.ai/api/v1",
     },
@@ -125,7 +138,7 @@ export const judgeNode = async (state: typeof DebateState.State) => {
   const model = createModel("anthropic/claude-sonnet-4.5").withStructuredOutput(
     z.object({
       winner: z.enum(["Bull", "Bear", "Tie"]),
-      confidence_score: z.number().min(0).max(10),
+      confidence_score: z.number(),
       reasoning: z.string(),
       key_takeaway: z.string(),
     })
@@ -143,7 +156,9 @@ CONSIDER:
 - Is the target customer clearly defined?
 - Is the timing argument compelling?
 
-Write your reasoning as flowing prose—no bullet points. 2-3 sentences for reasoning, 1 sentence for key takeaway.`;
+Write your reasoning as flowing prose—no bullet points. 2-3 sentences for reasoning, 1 sentence for key takeaway.
+
+For confidence_score, provide a number between 0 and 10 indicating how confident you are in your decision.`;
 
   const response = await model.invoke([
     new SystemMessage(systemPrompt),
