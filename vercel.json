@@ -1,0 +1,25 @@
+{
+  "buildCommand": "cd debate-ui && npm install && npm run build",
+  "outputDirectory": "debate-ui/dist",
+  "framework": null,
+  "installCommand": "npm install && cd debate-ui && npm install && cd ../api && npm install",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/**/*.ts": {
+      "maxDuration": 300
+    }
+  },
+  "env": {
+    "NODE_ENV": "production"
+  }
+}
+

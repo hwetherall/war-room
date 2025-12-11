@@ -1,0 +1,13 @@
+node_modules
+debate-engine/node_modules
+debate-ui/node_modules
+ingestion-engine/node_modules
+api/node_modules
+.env
+.env.local
+.env.*.local
+*.log
+dist
+build
+.DS_Store
+

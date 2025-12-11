@@ -1,0 +1,18 @@
+{
+  "name": "war-room",
+  "version": "1.0.0",
+  "description": "War Room - Investment Committee Simulator",
+  "scripts": {
+    "start": "concurrently \"npm:start:backend\" \"npm:start:frontend\"",
+    "start:backend": "cd debate-engine && npm run serve",
+    "start:frontend": "cd debate-ui && npm run dev",
+    "install:all": "npm install && cd debate-engine && npm install && cd ../debate-ui && npm install"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
+
